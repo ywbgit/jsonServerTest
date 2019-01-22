@@ -1,0 +1,22 @@
+{
+  "erpapp": [
+    {
+      "id": 0,
+      "appId": "erpapp",
+      "url": "/admin/supplier/getSupplierList",
+      "method": "POST",
+      "name": "查询供应商列表",
+      "description": "查询供应商列表",
+      "dataId": null
+    },
+    {
+      "id": 1,
+      "appId": "erpapp",
+      "url": "/admin/supplier/addSupplier",
+      "method": "POST",
+      "name": "添加供应商",
+      "description": "添加供应商",
+      "dataId": null
+    }
+  ]
+}

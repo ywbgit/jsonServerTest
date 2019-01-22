@@ -1,0 +1,10 @@
+{
+  "appList": [
+    {
+      "id": "erpapp",
+      "name": "erp便利店mock",
+      "description": "erp便利店mock服务",
+      "baseUrl": "/erpapp"
+    }
+  ]
+}
