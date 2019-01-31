@@ -7,33 +7,50 @@ const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath)
 const adapter = new FileSync(resolveApp('service/dataModel.json'))
 const dataModelDb = lowdb(adapter)
 
-const setDataModelNodeId = (dataModel, count = 0, dataModelType) => {
+const setDataModelNodeId = (dataModel, count, dataModelType) => {
     if (dataModelType === 2 && !dataModel.value) {
         throw new Error();
     }
     let { type, children, key } = dataModel;
+    let isTopNode = count === 0;
+    let rest = null;
     if (type === 'array') {
-        return {
+        rest = {
             type,
-            children: children.map((item) => setDataModelNodeId(item, count++)),
-            nodeId: count
-        }
+            options: {
+                pageNum: {
+                    nodeId: ++count,
+                    key: 'pageNum',
+                    type: 'number'
+                },
+                pageSize: {
+                    nodeId: ++count,
+                    key: 'pageSize',
+                    type: 'number'
+                }
+            },
+            children: children.map((item) => setDataModelNodeId(item, ++count))
+        };
     } else if (type === 'object') {
-        return {
+        rest = {
             type,
-            key,
-            children: children.map((item) => setDataModelNodeId(item, count++)),
-            nodeId: count
-        }
+            children: children.map((item) => setDataModelNodeId(item, ++count))
+        };
     } else {
-        return {
+        rest = {
             type,
             nodeId: count
-        }
+        };
+    }
+    return isTopNode ? {
+        ...rest
+    } : {
+        ...rest,
+        key
     }
 };
 
-const validateDataModel = (dataModel, count = 0, dataModelType) => {
+const validateDataModel = (dataModel, count, dataModelType) => {
     try {
         return setDataModelNodeId(dataModel, count, dataModelType);
     } catch {
@@ -41,15 +58,9 @@ const validateDataModel = (dataModel, count = 0, dataModelType) => {
     }
 }
 
-const createJSONDataModel = async (ctx) => {
+const createJSONDataModel = (ctx) => {
     const { appId, dataModel, type } = ctx.request.body;
-    if (!validateDataModel(dataModel, 0, type)) {
-        ctx.status = 200;
-        ctx.response.body = {
-            result: false,
-            message: 'dataModel不符合要求'
-        };
-    } else if (!appId || appId === '') {
+    if (!appId || appId === '') {
         ctx.status = 200;
         ctx.response.body = {
             result: false,
@@ -61,6 +72,12 @@ const createJSONDataModel = async (ctx) => {
             result: false,
             message: '未获取到dataModel'
         };
+    } else if (!validateDataModel(dataModel, 0, type)) {
+        ctx.status = 200;
+        ctx.response.body = {
+            result: false,
+            message: 'dataModel不符合要求'
+        };
     } else {
         const dataSourceList = dataModelDb.get(appId).value();
         const l = dataSourceList ? dataSourceList.length : 0;
@@ -68,7 +85,7 @@ const createJSONDataModel = async (ctx) => {
             dataModelDb.set(appId, []).write();
         }
         dataModelDb.get(appId)
-        .push({ id: l, appId, dataModel: type === 1 ? setDataModelNodeId(dataModel) : dataModel, type })
+        .push({ id: l, appId, dataModel: type === 1 ? setDataModelNodeId(dataModel, 0) : dataModel, type })
         .write();
         ctx.status = 200;
         ctx.response.body = {
@@ -77,6 +94,19 @@ const createJSONDataModel = async (ctx) => {
     }
 };
 
+const getJSONDataModel = (ctx) => {
+    const { appId, dataModelId } = ctx.request.body;
+    const dataSourceList = dataModelDb.get(appId).value();
+    const l = dataSourceList ? dataSourceList.length : 0;
+    if (l === 0) {
+        ctx.response.body = {
+            result: false,
+            message: '未查询到数据模型'
+        };
+    }
+}
+
 module.exports = {
-    createJSONDataModel
+    createJSONDataModel,
+    getJSONDataModel
 };

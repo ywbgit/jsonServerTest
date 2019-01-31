@@ -4,3 +4,7 @@ const DATA_MODEL_TYPE_MAP = new Map([
         2, '固定'
     ]
 ]);
+
+module.exports = {
+    DATA_MODEL_TYPE_MAP
+}
