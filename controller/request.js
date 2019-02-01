@@ -90,6 +90,25 @@ const createRequestModel = (ctx) => {
     }
 }
 
+const getRequestModel = (ctx) => {
+    const { interfaceId } = ctx.request.query;
+    if (!interfaceId || interfaceId === '') {
+        ctx.status = 200;
+        ctx.response.body = {
+            result: false,
+            message: '未获取到interfaceId'
+        };
+    } else {
+        const requestModel = requestDb.get(interfaceId).value();
+        ctx.status = 200;
+        ctx.response.body = {
+            result: true,
+            data: requestModel
+        };
+    }
+}
+
 module.exports = {
-    createRequestModel
+    createRequestModel,
+    getRequestModel
 }

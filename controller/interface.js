@@ -34,7 +34,7 @@ const createInterface = (ctx) => {
             interfaceDb.set(appId, []).write();
         }
         interfaceDb.get(appId)
-        .push({ id: l, appId, url, method, name, description, dataId: null })
+        .push({ interfaceId: l, appId, url, method, name, description, dataId: null })
         .write();
         ctx.status = 200;
         ctx.response.body = {
@@ -56,9 +56,7 @@ const getInterfaceList = (ctx) => {
         ctx.status = 200;
         ctx.response.body = {
             result: true,
-            data: {
-                interfaceList
-            }
+            data: interfaceList
         };
     }
 };

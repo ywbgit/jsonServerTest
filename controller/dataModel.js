@@ -94,19 +94,31 @@ const createJSONDataModel = (ctx) => {
     }
 };
 
-const getJSONDataModel = (ctx) => {
-    const { appId, dataModelId } = ctx.request.body;
-    const dataSourceList = dataModelDb.get(appId).value();
-    const l = dataSourceList ? dataSourceList.length : 0;
-    if (l === 0) {
+const getJSONDataModelList = (ctx) => {
+    const { appId } = ctx.request.query;
+    if (!appId || appId === '') {
+        ctx.status = 200;
         ctx.response.body = {
             result: false,
-            message: '未查询到数据模型'
+            message: '未获取到appId'
+        };
+    } else {
+        const dataSourceList = dataModelDb.get(appId).value() || [];
+        ctx.status = 200;
+        ctx.response.body = {
+            result: true,
+            data: dataSourceList
         };
     }
 }
 
+const relatedToDataModelNode = (ctx) => {
+    const {
+        appId, dataModelId, dataModelNodeId, expression
+    } = ctx.request.body;
+}
+
 module.exports = {
     createJSONDataModel,
-    getJSONDataModel
+    getJSONDataModelList
 };
